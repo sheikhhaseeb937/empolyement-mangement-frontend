@@ -13,7 +13,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "noEmit": true
+    "noEmit": false       
   },
   "include": ["src"]
 }
