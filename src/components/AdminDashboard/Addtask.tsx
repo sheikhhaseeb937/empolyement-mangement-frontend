@@ -51,7 +51,7 @@ console.log(formData)
   // Fetch all employees on mount
   const allgetEmployee = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/getAll");
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/getAll`);
       const allDataEmployee = response.data.data;
       setEmployees(allDataEmployee);
     } catch (error) {
