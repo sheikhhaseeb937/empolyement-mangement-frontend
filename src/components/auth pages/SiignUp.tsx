@@ -55,13 +55,16 @@ const customTheme = extendTheme({ defaultColorScheme: 'dark' });
 const AdminLoginPage: React.FC = () => {
 
   const [email,setEmail]=React.useState("")
+  const [fullname,setFullname]=React.useState("")
+
   const [password,setPassword]=React.useState("")
   
   const navigate = useNavigate();
     const handleSubmit =async()=>{
   console.log({email,password})
   try {
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/adminLogin`,{
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/create`,{
+      fullname,
       email,
       password
     })
@@ -69,19 +72,14 @@ const AdminLoginPage: React.FC = () => {
   
   
   
-  const roleEmployee = response.data.user.role;
-  console.log(roleEmployee)
-  localStorage.setItem("role",roleEmployee)
+
   
-  if(response && roleEmployee === "admin"){
+  if(response){
     localStorage.setItem("token",response.data.tokenjwt)
     toast.success(response.data?.message);
 setTimeout(() => {
-    navigate("/admin/dashboard")
+    navigate("/")
 }, 2000);
-  }else{
-      localStorage.removeItem("role");
-          toast.error("Unauthorized role!");
   }
   
   } catch (error:any) {
@@ -137,7 +135,7 @@ setTimeout(() => {
               <IconButton variant="soft" color="primary" size="sm">
                 <BadgeRoundedIcon />
               </IconButton>
-              <Typography   level="title-lg">Soluation</Typography>
+              <Typography   level="title-lg">HeaHealthMate – Sehat ka Smart Dost</Typography>
             </Box>
             <ColorSchemeToggle />
           </Box>
@@ -167,12 +165,12 @@ setTimeout(() => {
             <Stack sx={{ gap: 4, mb: 2 }}>
               <Stack sx={{ gap: 1 }}>
                 <Typography component="h1" level="h3">
-                  Sign in Admin
+                  Sign Up
                 </Typography>
                 <Typography level="body-sm">
-                  Are you the employee?{' '}
-                  <Link to="/"  className='text-blue-500 font-semibold' >
-                    Employee Sign In!
+                  Are you the Login?{' '}
+                  <Link to="/login"  className='text-blue-500 font-semibold' >
+                    User Sign In!
                   </Link>
                 </Typography>
               </Stack>
@@ -207,6 +205,11 @@ setTimeout(() => {
                   alert(JSON.stringify(data, null, 2));
                 }}
               >
+                
+                <FormControl required>
+                  <FormLabel> Full Name</FormLabel>
+                  <Input onChange={(e)=>setFullname(e.target.value)} type="text" name="text" />
+                </FormControl>
                 <FormControl required>
                   <FormLabel>Email</FormLabel>
                   <Input onChange={(e)=>setEmail(e.target.value)} type="email" name="email" />

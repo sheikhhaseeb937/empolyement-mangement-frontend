@@ -1,14 +1,16 @@
 
 import { Route, Routes } from 'react-router-dom'
 import './App.css'
-import DashboardLayoutBranding from './components/AdminDashboard/Adminpanel'
+
 import LoginPage from './components/auth pages/login'
-import AdminLoginPage from './components/auth pages/AdminLogin'
-import Employee from './components/employee/Employee'
+import AdminLoginPage from './components/auth pages/SiignUp'
+import Employee from './components/employee/MainDashobard'
 import ProtectedRoute from './AuthGurad/AuthGurad'
 import AdminGurad from './AuthGurad/AdminGurad'
 import PageAccess from './AuthGurad/EmpolyeePageGurad'
 import NotFoundPage from './AuthGurad/PagenotFound'
+import UploadReport from './components/employee/UploadReport'
+import LandingPage from './components/employee/Landingpage'
 // import DashboardLayoutBranding from './components/employee/Employee'
 
 function App() {
@@ -23,22 +25,20 @@ function App() {
 
           {/* //AuthGurad */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<LandingPage />} />
+
             <Route path="/admin" element={<AdminLoginPage />} />
 
           </Route>
 
 {/* //PageAccess */}
           <Route element={<PageAccess />}>
-            <Route path="/employeePage" element={<Employee />} />
+            <Route path="/main" element={<Employee />} />
+            <Route path='/upload' element={<UploadReport/>}/>
           </Route>
 
-{/* ///Admin page  */}
-          <Route element={<AdminGurad />}>
 
-            <Route path="/admin/dashboard" element={<DashboardLayoutBranding />} />
-
-          </Route>
 
 {/* ////PagenotFound */}
           <Route path='*' element={<NotFoundPage />} />

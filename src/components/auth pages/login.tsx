@@ -102,11 +102,9 @@ const handleSubmit = async () => {
 
     console.log(response.data.user);
 
-    const roleEmployee = response.data.user.role;
-    console.log(roleEmployee);
-    localStorage.setItem("role", roleEmployee);
 
-    if (response && roleEmployee === "user") {
+
+    if (response) {
       // ✅ Save token + user
       localStorage.setItem("token", response.data.tokenjwt);
       localStorage.setItem("user", JSON.stringify(response.data.user));
@@ -117,7 +115,7 @@ const handleSubmit = async () => {
 
       // ✅ Navigate after 2 sec
       setTimeout(() => {
-        navigate("/employeePage");
+        navigate("/main");
       }, 2000);
     } else {
          localStorage.removeItem("role");
@@ -179,7 +177,7 @@ const handleSubmit = async () => {
               <IconButton variant="soft" color="primary" size="sm">
                 <BadgeRoundedIcon />
               </IconButton>
-              <Typography   level="title-lg">Soluation</Typography>
+              <Typography   level="title-lg">HealthMate – Sehat ka Smart Dost</Typography>
             </Box>
             <ColorSchemeToggle />
           </Box>
@@ -209,12 +207,12 @@ const handleSubmit = async () => {
             <Stack sx={{ gap: 4, mb: 2 }}>
               <Stack sx={{ gap: 1 }}>
                 <Typography component="h1" level="h3">
-                  Sign in Empolyee
+                  Log In 
                 </Typography>
                 <Typography level="body-sm">
-                  Are you the admin?{' '}
+                  Are you the New user?{' '}
                   <Link to="/admin" className='text-blue-500 font-semibold'>
-                    Admin Sign In!
+                    User Sign In!
                   </Link>
                 </Typography>
               </Stack>

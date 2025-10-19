@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "target": "es2017",                        // Enables async/await
+    "lib": ["es2017", "dom"],                  // Includes Promise and browser APIs
     "strict": false,
     "noImplicitAny": false,
     "strictNullChecks": false,
@@ -13,7 +15,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "noEmit": false       
+    "noEmit": false
   },
   "include": ["src"]
 }
