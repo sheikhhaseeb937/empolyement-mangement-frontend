@@ -10,9 +10,14 @@ import {
   DialogActions,
   TextField,
   Card,
+  CircularProgress,
+  Alert,
+  Box,
 } from "@mui/material";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import ReportCard from "./ReportCard";
+import axios from "axios";
+import { GEMINI_API_URL } from "../../config/gemini";
 
 // ✅ Correct Vite-compatible import setup for pdf.js
 import * as pdfjsLib from "pdfjs-dist";
@@ -27,6 +32,9 @@ export default function Dashboard() {
   const [preview, setPreview] = useState("");
   const [date, setDate] = useState("");
   const [type, setType] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState("");
+  const [analysisError, setAnalysisError] = useState("");
 
   const reports = [
     { id: "r1", title: "CBC Report", date: "2025-10-10", summary: "Hb low, WBC normal" },
@@ -62,6 +70,43 @@ export default function Dashboard() {
 
     console.log("📄 Extracted PDF Text:");
     console.log(fullText);
+    return fullText;
+  };
+
+  // 🔹 Function to send text to Gemini for analysis
+  const analyzeWithGemini = async (text: string, reportType: string) => {
+    try {
+      setIsAnalyzing(true);
+      setAnalysisError("");
+      
+      const prompt = `Please analyze this medical report and provide a comprehensive explanation in simple terms:
+
+Report Type: ${reportType}
+Report Date: ${date}
+
+Medical Report Content:
+${text}
+
+Please provide:
+1. A summary of the key findings
+2. What each result means in simple terms
+3. Any concerns or areas that need attention
+4. General health recommendations based on the results
+
+Please respond in a clear, easy-to-understand format that a patient can comprehend.`;
+
+      const response = await axios.post(GEMINI_API_URL, {
+        contents: [{ parts: [{ text: prompt }] }],
+      });
+
+      const aiText = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from Gemini.";
+      setAnalysisResult(aiText);
+    } catch (error) {
+      console.error("Gemini analysis error:", error);
+      setAnalysisError("Failed to analyze the report. Please check your API key and try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   // 🔹 Handle Upload
@@ -79,17 +124,16 @@ export default function Dashboard() {
 
     if (file.type === "application/pdf") {
       console.log("🔍 Reading PDF...");
-      await extractPdfText(file);
+      const extractedText = await extractPdfText(file);
+      if (extractedText.trim()) {
+        await analyzeWithGemini(extractedText, type || "Medical Report");
+      } else {
+        setAnalysisError("Could not extract text from PDF. Please try a different file.");
+      }
     } else if (file.type.startsWith("image/")) {
-      console.log("🖼️ Image file detected (PDF text extraction skipped)");
+      console.log("🖼️ Image file detected - Gemini can analyze images directly");
+      setAnalysisError("Image analysis not implemented yet. Please upload a PDF file.");
     }
-
-    alert(`Uploaded (stub): ${file.name}`);
-    setOpenUpload(false);
-    setFile(null);
-    setPreview("");
-    setDate("");
-    setType("");
   };
 
   return (
@@ -158,7 +202,7 @@ export default function Dashboard() {
       </div>
 
       {/* Upload Modal */}
-      <Dialog open={openUpload} onClose={() => setOpenUpload(false)} maxWidth="sm" fullWidth>
+      <Dialog open={openUpload} onClose={() => setOpenUpload(false)} maxWidth="md" fullWidth>
         <DialogTitle>Upload Report</DialogTitle>
         <DialogContent dividers>
           <form onSubmit={handleUpload} className="space-y-4 mt-2">
@@ -217,20 +261,61 @@ export default function Dashboard() {
           </form>
 
           <Typography variant="body2" sx={{ mt: 2, color: "text.secondary" }}>
-            Roman Urdu: “File select karein — Gemini khud PDF/image padh lega.”
+            Roman Urdu: "File select karein — Gemini khud PDF/image padh lega."
           </Typography>
+
+          {/* Loading State */}
+          {isAnalyzing && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 3 }}>
+              <CircularProgress size={24} />
+              <Typography>Analyzing your report with Gemini AI...</Typography>
+            </Box>
+          )}
+
+          {/* Error State */}
+          {analysisError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {analysisError}
+            </Alert>
+          )}
+
+          {/* Analysis Results */}
+          {analysisResult && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, color: "#EA580C" }}>
+                📊 AI Analysis Results
+              </Typography>
+              <Card sx={{ p: 2, backgroundColor: "#f8f9fa" }}>
+                <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                  {analysisResult}
+                </Typography>
+              </Card>
+            </Box>
+          )}
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setOpenUpload(false)} color="inherit">
-            Cancel
+          <Button 
+            onClick={() => {
+              setOpenUpload(false);
+              setFile(null);
+              setPreview("");
+              setDate("");
+              setType("");
+              setAnalysisResult("");
+              setAnalysisError("");
+            }} 
+            color="inherit"
+          >
+            {analysisResult ? 'Close' : 'Cancel'}
           </Button>
           <Button
             variant="contained"
             sx={{ backgroundColor: "#EA580C", "&:hover": { backgroundColor: "#c2410c" } }}
             onClick={handleUpload}
+            disabled={isAnalyzing}
           >
-            Upload & Analyze
+            {isAnalyzing ? 'Analyzing...' : 'Upload & Analyze'}
           </Button>
         </DialogActions>
       </Dialog>
